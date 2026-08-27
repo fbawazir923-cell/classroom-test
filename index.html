@@ -21,7 +21,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6;margin:0;
 <span><span class="text-green-400">متصل</span> 🟢</span>
 </div>
 
-<!-- حاوية السبورة والكاميرا المحدثة لضمان عدم التداخل -->
 <div id="mediaSection" class="p-2 bg-slate-100 border-b border-gray-200 shrink-0 flex gap-2 items-center transition-all">
 <div id="whiteboardWrapper" class="w-1/2 h-52 bg-white rounded-2xl border border-gray-300 p-2 flex flex-col justify-between relative shadow-sm overflow-hidden board-transition z-10">
 <div class="flex justify-between items-center text-xs text-gray-700 font-bold px-1 z-40 bg-white pb-1 border-b border-gray-100">
@@ -105,6 +104,472 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6;margin:0;
 <input type="text" id="messageInput" placeholder="اكتب رسالة أو سؤال هنا..." class="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
 <button onclick="sendMessage()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold">إرسال</button>
 </div>
+<div class="bg-white border-t border-gray-200 p-2 grid grid-cols-4 gap-1 text-center shrink-0">
+<button onclick="exitClassroom()" class="flex flex-col items-center justify-center p-1.5 rounded-xl text-red-600 hover:bg-red-50"><span class="text-base">🚪</span><span class="text-[10px] mt-0.5">خروج</span></button>
+<button onclick="alert('الأدوات التفاعلية')" class="flex flex-col items-center justify-center p-1.5 rounded-xl text-indigo-600 hover:bg-indigo-50"><span class="text-base">🧰</span><span class="text-[10px] mt-0.5">الأدوات</span></button>
+<button onclick="toggleGeminiModal()" class="flex flex-col items-center justify-center p-1.5 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100"><span class="text-base">✨</span><span class="text-[10px] mt-0.5 font-bold">المساعد الذكي</span></button>
+<button onclick="openSmartRecorder()" class="flex flex-col items-center justify-center p-1.5 rounded-xl text-emerald-700 hover:bg-emerald-50"><span class="text-base">🎙️</span><span class="text-[10px] mt-0.5 font-bold">التسجيل الذكي</span></button>
+</div>
+</div>
+
+<!-- نافذة النصوص -->
+<div id="textModal" class="fixed inset-0 bg-black/55 hidden z-50 flex items-center justify-center p-4">
+<div class="bg-white rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+<div class="flex justify-between items-center border-b pb-2">
+<h3 class="font-bold text-slate-800 text-sm">💬 النصوص الجاهزة والذكية</h3>
+<button onclick="toggleTextModal()" class="text-gray-400 font-bold">✕</button>
+</div>
+<div id="quickTextList" class="space-y-1.5 max-h-60 overflow-y-auto"></div>
+<button onclick="toggleTextModal()" class="w-full bg-gray-100 py-1.5 rounded-xl text-xs font-bold">إغلاق</button>
+</div>
+</div>
+
+<!-- نافذة المساعد -->
+<div id="geminiModal" class="fixed inset-0 bg-black/55 hidden z-50 flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl w-full max-w-sm h-[420px] flex flex-col shadow-2xl overflow-hidden">
+<div class="flex justify-between items-center border-b p-3 bg-purple-50 shrink-0">
+<div class="flex items-center gap-1.5"><span class="text-lg">✨</span><h3 class="font-bold text-purple-900 text-xs">المساعد الذكي</h3></div>
+<div class="flex items-center gap-1.5">
+<select id="aiModelSelect" class="bg-white border border-purple-200 rounded-lg px-2 py-1 text-[11px]">
+<option value="gemini">Google Gemini</option>
+<option value="chatgpt">OpenAI ChatGPT</option>
+</select>
+<button onclick="toggleGeminiModal()" class="text-gray-400 font-bold">✕</button>
+</div>
+</div>
+<div id="geminiChatContainer" class="flex-1 p-3 overflow-y-auto space-y-2.5 bg-gray-50 text-xs">
+<div class="bg-purple-100 border border-purple-200 p-2.5 rounded-2xl">
+<span class="text-[9px] text-purple-700 font-bold block">[AI Assistant]</span>
+<p>أهلاً بكِ! اختاري النموذج واكتبي سؤالك.</p>
+</div>
+</div>
+<div class="p-2.5 bg-white border-t flex gap-2 shrink-0">
+<input type="text" id="geminiInput" placeholder="اسأل الذكاء الاصطناعي..." class="flex-1 bg-gray-100 border rounded-xl px-3 py-1.5 text-xs" onkeypress="if(event.key==='Enter') sendRealAIMessage()">
+<button onclick="sendRealAIMessage()" class="bg-purple-600 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold">إرسال</button>
+</div>
+</div>
+</div>
+
+<!-- نافذة التسجيل الذكي -->
+<div id="smartRecorderModal" class="fixed inset-0 bg-black/60 hidden z-[70] flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-b p-4">
+<div class="flex justify-between items-center">
+<div>
+<h2 class="font-bold text-emerald-900 text-sm">🎙️ التسجيل الذكي</h2>
+<p class="text-[10px] text-gray-500 mt-1">ترجمة الرسالة وإرسالها كصوت باللغة المختارة</p>
+</div>
+<button onclick="closeSmartRecorder()" class="text-gray-400 hover:text-red-500 font-bold text-lg">✕</button>
+</div>
+</div>
+<div class="p-4 space-y-4">
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1.5">🌍 لغة الصوت</label>
+<select id="smartLanguage" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">
+<option value="en">🇬🇧 الإنجليزية</option>
+<option value="es">🇪🇸 الإسبانية</option>
+<option value="it">🇮🇹 الإيطالية</option>
+<option value="fr">🇫🇷 الفرنسية</option>
+</select>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-700 mb-1.5">✍️ اكتب رسالة</label>
+<textarea id="smartTextInput" rows="3" placeholder="مثال: Hello, how are you?" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs resize-none"></textarea>
+<button onclick="translateTextAndSendAudio()" id="smartTextButton" class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-xs font-bold">🔊 تحويل النص إلى صوت ونطقه فوراً</button>
+</div>
+<div class="relative flex items-center">
+<div class="flex-1 border-t"></div>
+<span class="px-3 text-[10px] text-gray-400">أو</span>
+<div class="flex-1 border-t"></div>
+</div>
+<div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
+<div id="recordStatus" class="text-[11px] text-gray-500 mb-3">اضغطي على التسجيل وابدئي الكلام</div>
+<button id="recordButton" onclick="toggleRecording()" class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white text-2xl shadow-lg mx-auto flex items-center justify-center">🎙️</button>
+<div id="recordTimer" class="text-xs font-bold text-red-600 mt-3 hidden">00:00</div>
+<button id="convertRecordingButton" onclick="convertRecordedAudio()" class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-xs font-bold hidden">🌍 تحويل وإرسال إلى المحادثة</button>
+<audio id="recordPreview" controls class="w-full mt-3 hidden h-9"></audio>
+</div>
+<div id="smartMessage" class="text-[10px] text-center min-h-[16px]"></div>
+</div>
+</div>
+</div>
+
+<script>
+let quickTexts=[
+"أهلاً بك، هل نبدأ الدرس الآن؟",
+"أحسنت، إجابة صحيحة وموفقة!",
+"الرجاء التركيز في هذه النقطة المهمة.",
+"هل لديك أي استفسار عما شرحناه؟"
+];
+
+function renderQuickTexts(){
+const container=document.getElementById("quickTextList");
+if(!container) return;
+container.innerHTML="";
+quickTexts.forEach(t=>{
+container.innerHTML+=`<button onclick="useQuickText('${t}')" class="w-full text-right px-3 py-2 hover:bg-indigo-50 rounded-xl text-slate-700 text-xs border border-gray-100">${t}</button>`;
+});
+}
+
+function useQuickText(text){
+document.getElementById("messageInput").value=text;
+toggleTextModal();
+}
+
+function exitClassroom(){
+if(!confirm("هل تريدين الخروج من الصف؟"))return;
+const classroom=document.getElementById("classroom");
+classroom.innerHTML=`
+<div class="flex flex-col items-center justify-center h-full bg-slate-900 text-white p-6 text-center">
+<div class="text-6xl mb-5">👋</div>
+<h2 class="text-xl font-bold mb-2">تم الخروج من الصف</h2>
+<p class="text-sm text-slate-400">تم إغلاق الصف التعليمي بنجاح.</p>
+</div>`;
+}
+
+let isExpanded=false;
+let isCameraExpanded=false;
+
+function toggleExpandBoard(){
+const cameraBox=document.getElementById("cameraBox");
+const board=document.getElementById("whiteboardWrapper");
+if(isCameraExpanded)toggleExpandCamera();
+isExpanded=!isExpanded;
+if(isExpanded){
+cameraBox.classList.remove("w-1/2");
+cameraBox.classList.add("w-0","opacity-0","overflow-hidden","p-0","border-0");
+board.classList.remove("w-1/2");
+board.classList.add("w-full");
+document.getElementById("expandBtnText").innerText="تصغير";
+}else{
+cameraBox.classList.add("w-1/2");
+cameraBox.classList.remove("w-0","opacity-0","overflow-hidden","p-0","border-0");
+board.classList.add("w-1/2");
+board.classList.remove("w-full");
+document.getElementById("expandBtnText").innerText="تكبير";
+}
+setTimeout(resizeCanvas,300);
+}
+
+function toggleExpandCamera(){
+const cameraBox=document.getElementById("cameraBox");
+const board=document.getElementById("whiteboardWrapper");
+if(isExpanded)toggleExpandBoard();
+isCameraExpanded=!isCameraExpanded;
+if(isCameraExpanded){
+board.classList.remove("w-1/2");
+board.classList.add("w-0","opacity-0","overflow-hidden","p-0","border-0");
+cameraBox.classList.remove("w-1/2");
+cameraBox.classList.add("w-full");
+document.getElementById("expandCameraBtnText").innerText="تصغير";
+}else{
+board.classList.add("w-1/2");
+board.classList.remove("w-0","opacity-0","overflow-hidden","p-0","border-0");
+cameraBox.classList.add("w-1/2");
+cameraBox.classList.remove("w-full");
+document.getElementById("expandCameraBtnText").innerText="تكبير";
+}
+setTimeout(resizeCanvas,300);
+}
+
+function toggleAddMenu(){
+document.getElementById("addMenu").classList.toggle("hidden");
+document.getElementById("penMenu").classList.add("hidden");
+}
+
+function togglePenMenu(){
+document.getElementById("penMenu").classList.toggle("hidden");
+document.getElementById("addMenu").classList.add("hidden");
+}
+
+function toggleTextModal(){
+document.getElementById("textModal").classList.toggle("hidden");
+document.getElementById("addMenu").classList.add("hidden");
+renderQuickTexts();
+}
+
+function toggleGeminiModal(){
+document.getElementById("geminiModal").classList.toggle("hidden");
+}
+
+function escapeHTML(str){
+return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
+}
+
+function sendMessage(){
+const input=document.getElementById("messageInput");
+const text=input.value.trim();
+if(!text) return;
+const chat=document.getElementById("chatContainer");
+chat.innerHTML+=`
+<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-2xl rounded-tl-none text-xs mr-auto max-w-[85%]">
+<span class="text-[10px] text-indigo-600 font-bold block">[أنت]</span>
+<p class="text-slate-800">${escapeHTML(text)}</p>
+</div>`;
+input.value="";
+chat.scrollTop=chat.scrollHeight;
+}
+
+const canvas=document.getElementById("whiteboardCanvas");
+const ctx=canvas.getContext("2d");
+let painting=false;
+let penColor="#000000";
+let lineWidth=2;
+
+function resizeCanvas(){
+const rect=canvas.getBoundingClientRect();
+canvas.width=rect.width;
+canvas.height=rect.height;
+}
+window.addEventListener('load', resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
+
+function startPosition(e){
+painting=true;
+draw(e);
+}
+function finishedPosition(){
+painting=false;
+ctx.beginPath();
+}
+function draw(e){
+if(!painting)return;
+ctx.lineWidth=lineWidth;
+ctx.lineCap="round";
+ctx.strokeStyle=penColor;
+const rect=canvas.getBoundingClientRect();
+const x=(e.clientX || e.touches[0].clientX)-rect.left;
+const y=(e.clientY || e.touches[0].clientY)-rect.top;
+ctx.lineTo(x,y);
+ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(x,y);
+}
+
+canvas.addEventListener("mousedown", startPosition);
+canvas.addEventListener("mouseup", finishedPosition);
+canvas.addEventListener("mousemove", draw);
+canvas.addEventListener("touchstart", startPosition);
+canvas.addEventListener("touchend", finishedPosition);
+canvas.addEventListener("touchmove", draw);
+
+function setPenColor(color){
+penColor=color;
+document.getElementById("currentColorIndicator").style.backgroundColor=color;
+document.getElementById("penMenu").classList.add("hidden");
+}
+
+function setLineWidth(width){
+lineWidth=width;
+document.getElementById("penMenu").classList.add("hidden");
+}
+
+function clearCanvas(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function clearBoardMedia(){
+document.getElementById("boardImage").classList.add("hidden");
+document.getElementById("boardVideo").classList.add("hidden");
+document.getElementById("clearMediaBtn").classList.add("hidden");
+}
+
+function handleImageToBoard(input){
+if(input.files && input.files[0]){
+const reader=new FileReader();
+reader.onload=function(e){
+const img=document.getElementById("boardImage");
+img.src=e.target.result;
+img.classList.remove("hidden");
+document.getElementById("boardVideo").classList.add("hidden");
+document.getElementById("clearMediaBtn").classList.remove("hidden");
+}
+reader.readAsDataURL(input.files[0]);
+}
+document.getElementById("addMenu").classList.add("hidden");
+}
+
+function handleVideoToBoard(input){
+if(input.files && input.files[0]){
+const reader=new FileReader();
+reader.onload=function(e){
+const video=document.getElementById("boardVideo");
+video.src=e.target.result;
+video.classList.remove("hidden");
+document.getElementById("boardImage").classList.add("hidden");
+document.getElementById("clearMediaBtn").classList.remove("hidden");
+}
+reader.readAsDataURL(input.files[0]);
+}
+document.getElementById("addMenu").classList.add("hidden");
+}
+
+function handleAudioToChat(input){
+if(input.files && input.files[0]){
+const chat=document.getElementById("chatContainer");
+chat.innerHTML+=`
+<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-2xl text-xs">
+<span class="text-[10px] text-indigo-600 font-bold block">[ملف صوتي]</span>
+<audio controls class="w-full mt-1 h-8"><source src="${URL.createObjectURL(input.files[0])}"></audio>
+</div>`;
+chat.scrollTop=chat.scrollHeight;
+}
+document.getElementById("addMenu").classList.add("hidden");
+}
+
+async function sendRealAIMessage(){
+const input=document.getElementById("geminiInput");
+const text=input.value.trim();
+if(!text)return;
+const model=document.getElementById("aiModelSelect").value;
+const chat=document.getElementById("geminiChatContainer");
+chat.innerHTML+=`
+<div class="bg-white border p-2.5 rounded-2xl text-slate-800 max-w-[85%]">
+<span class="text-[9px] text-slate-500 font-bold block">[أنت]</span>
+<p>${escapeHTML(text)}</p>
+</div>`;
+input.value="";
+const loadingId="loading_"+Date.now();
+chat.innerHTML+=`
+<div id="${loadingId}" class="bg-purple-100 border border-purple-200 p-2.5 rounded-2xl max-w-[85%]">
+<span class="text-[9px] text-purple-700 font-bold">[${model.toUpperCase()}]</span>
+<p>جاري الاتصال...</p>
+</div>`;
+chat.scrollTop=chat.scrollHeight;
+}
+
+let mediaRecorder=null;
+let currentStream=null;
+let recordedChunks=[];
+let recordedBlob=null;
+let isRecording=false;
+let recordingTimer=null;
+let secondsCount=0;
+
+function openSmartRecorder(){
+document.getElementById("smartRecorderModal").classList.remove("hidden");
+setSmartMessage("");
+}
+
+function closeSmartRecorder(){
+if(isRecording) stopRecording();
+
+if(currentStream){
+currentStream.getTracks().forEach(track=>track.stop());
+currentStream=null;
+}
+
+document.getElementById("smartRecorderModal").classList.add("hidden");
+}
+
+function setSmartMessage(message, error=false){
+const box=document.getElementById("smartMessage");
+box.innerText = message;
+box.className = "text-[10px] text-center min-h-[16px] " + (error ? "text-red-600" : "text-emerald-700");
+}
+
+async function toggleRecording(){
+const recordButton=document.getElementById("recordButton");
+const recordStatus=document.getElementById("recordStatus");
+const recordTimer=document.getElementById("recordTimer");
+const convertBtn=document.getElementById("convertRecordingButton");
+const preview=document.getElementById("recordPreview");
+
+if(!isRecording){
+try{
+currentStream = await navigator.mediaDevices.getUserMedia({audio:true});
+mediaRecorder = new MediaRecorder(currentStream);
+recordedChunks=[];
+
+mediaRecorder.ondataavailable=function(e){
+if(e.data.size>0) recordedChunks.push(e.data);
+};
+
+mediaRecorder.onstop=function(){
+recordedBlob = new Blob(recordedChunks, {type:'audio/webm'});
+const audioUrl = URL.createObjectURL(recordedBlob);
+preview.src = audioUrl;
+preview.classList.remove("hidden");
+convertBtn.classList.remove("hidden");
+};
+
+mediaRecorder.start();
+isRecording=true;
+recordButton.classList.add("recording-pulse","bg-red-700");
+recordStatus.innerText="جاري التسجيل... اضغطي مرة أخرى للإيقاف";
+recordTimer.classList.remove("hidden");
+secondsCount=0;
+recordTimer.innerText="00:00";
+
+recordingTimer=setInterval(()=>{
+secondsCount++;
+let m=Math.floor(secondsCount/60).toString().padStart(2,'0');
+let s=(secondsCount%60).toString().padStart(2,'0');
+recordTimer.innerText=`${m}:${s}`;
+},1000);
+
+}catch(err){
+setSmartMessage("تعذر الوصول إلى الميكروفون. يرجى التحقق من الأذونات.", true);
+}
+}else{
+stopRecording();
+}
+}
+
+function stopRecording(){
+if(mediaRecorder && isRecording){
+mediaRecorder.stop();
+if(currentStream){
+currentStream.getTracks().forEach(track=>track.stop());
+currentStream=null;
+}
+}
+isRecording=false;
+clearInterval(recordingTimer);
+const recordButton=document.getElementById("recordButton");
+const recordStatus=document.getElementById("recordStatus");
+recordButton.classList.remove("recording-pulse","bg-red-700");
+recordStatus.innerText="تم إيقاف التسجيل. يمكنك المعاينة أو التحويل.";
+}
+
+function convertRecordedAudio(){
+if(!recordedBlob) return;
+const chat=document.getElementById("chatContainer");
+const audioUrl=URL.createObjectURL(recordedBlob);
+chat.innerHTML+=`
+<div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-xs">
+<span class="text-[10px] text-emerald-700 font-bold block">[التسجيل الصوتي]</span>
+<audio controls class="w-full mt-1 h-8"><source src="${audioUrl}"></audio>
+</div>`;
+chat.scrollTop=chat.scrollHeight;
+closeSmartRecorder();
+}
+
+function translateTextAndSendAudio(){
+const text=document.getElementById("smartTextInput").value.trim();
+if(!text) return;
+
+const selectedLang=document.getElementById("smartLanguage").value;
+
+if('speechSynthesis' in window){
+const utterance=new SpeechSynthesisUtterance(text);
+utterance.lang = selectedLang === 'en' ? 'en-US' : selectedLang === 'es' ? 'es-ES' : selectedLang === 'it' ? 'it-IT' : 'fr-FR';
+window.speechSynthesis.speak(utterance);
+}
+
+const chat=document.getElementById("chatContainer");
+chat.innerHTML+=`
+<div class="bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-xs">
+<span class="text-[10px] text-emerald-700 font-bold block">[نطق صوتي - ${selectedLang.toUpperCase()}]</span>
+<p class="text-slate-800 mb-1">${escapeHTML(text)}</p>
+</div>`;
+chat.scrollTop=chat.scrollHeight;
+document.getElementById("smartTextInput").value="";
+closeSmartRecorder();
+}
+</script>
+</body>
+</html></div>
 <div class="bg-white border-t border-gray-200 p-2 grid grid-cols-4 gap-1 text-center shrink-0">
 <button onclick="exitClassroom()" class="flex flex-col items-center justify-center p-1.5 rounded-xl text-red-600 hover:bg-red-50"><span class="text-base">🚪</span><span class="text-[10px] mt-0.5">خروج</span></button>
 <button onclick="alert('الأدوات التفاعلية')" class="flex flex-col items-center justify-center p-1.5 rounded-xl text-indigo-600 hover:bg-indigo-50"><span class="text-base">🧰</span><span class="text-[10px] mt-0.5">الأدوات</span></button>
