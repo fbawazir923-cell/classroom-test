@@ -4,49 +4,179 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>الصف التجريبي الآمن - السبورة والمساعد الذكي</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
 <style>
-body{font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6}
-#whiteboardCanvas{touch-action:none;cursor:crosshair}
-.board-transition{transition:all .3s ease-in-out}
-.recording-pulse{animation:recordingPulse 1s infinite}
+*{box-sizing:border-box}
+
+body{
+font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:#f3f4f6;
+margin:0;
+}
+
+button,input,textarea,select{
+font-family:inherit;
+}
+
+button{
+cursor:pointer;
+}
+
+#whiteboardCanvas{
+touch-action:none;
+cursor:crosshair;
+}
+
+.board-transition{
+transition:all .3s ease-in-out;
+}
+
+.recording-pulse{
+animation:recordingPulse 1s infinite;
+}
+
 @keyframes recordingPulse{
 0%,100%{transform:scale(1);opacity:1}
 50%{transform:scale(1.08);opacity:.65}
+}
+
+.modal-backdrop{
+backdrop-filter:blur(5px);
+}
+
+.tool-card{
+transition:.2s ease;
+}
+
+.tool-card:hover{
+transform:translateY(-2px);
+}
+
+.scrollbar::-webkit-scrollbar{
+width:5px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb{
+background:#cbd5e1;
+border-radius:20px;
+}
+
+.chat-message{
+animation:messageIn .2s ease;
+}
+
+@keyframes messageIn{
+from{
+opacity:0;
+transform:translateY(5px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.fullscreen-board{
+position:fixed!important;
+inset:12px!important;
+width:auto!important;
+height:auto!important;
+z-index:100!important;
+background:white;
+}
+
+.fullscreen-camera{
+position:fixed!important;
+inset:12px!important;
+width:auto!important;
+height:auto!important;
+z-index:100!important;
+}
+
+@media(max-width:500px){
+#classroom{
+border-radius:0!important;
+}
+
+.tool-grid{
+grid-template-columns:repeat(3,1fr)!important;
+}
 }
 </style>
 </head>
 
 <body class="flex justify-center items-center min-h-screen p-0 sm:p-4">
 
-<div id="classroom" class="w-full max-w-md h-screen sm:h-[880px] bg-white sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 relative">
+<div id="classroom"
+class="w-full max-w-md h-screen sm:h-[880px] bg-white sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-200 relative">
+
+<!-- ===================== الشريط العلوي ===================== -->
 
 <div class="bg-slate-900 text-white text-xs px-4 py-2 flex justify-between items-center shrink-0">
-<span class="font-medium">غرفة الصف الآمنة</span>
-<span>🔒 <span>مشفر</span></span>
-<span><span class="text-green-400">متصل</span> 🟢</span>
+
+<span class="font-medium flex items-center gap-1">
+🏫 غرفة الصف الآمنة
+</span>
+
+<span class="text-slate-300">
+🔒 مشفر
+</span>
+
+<span class="flex items-center gap-1">
+<span class="text-green-400">متصل</span>
+🟢
+</span>
+
 </div>
+
+
+<!-- ===================== السبورة والكاميرا ===================== -->
 
 <div class="p-2 bg-slate-100 border-b border-gray-250 shrink-0 flex gap-2 items-center transition-all">
 
-<div id="whiteboardWrapper" class="w-1/2 h-56 bg-white rounded-2xl border border-gray-300 p-2 flex flex-col justify-between relative shadow-sm overflow-visible board-transition z-10">
+<!-- السبورة -->
+
+<div id="whiteboardWrapper"
+class="w-1/2 h-56 bg-white rounded-2xl border border-gray-300 p-2 flex flex-col justify-between relative shadow-sm overflow-visible board-transition z-10">
 
 <div class="flex justify-between items-center text-xs text-gray-700 font-bold px-1 z-40 bg-white pb-1.5 border-b border-gray-100">
 
-<button onclick="toggleExpandBoard()" id="expandBtn" class="bg-gray-100 hover:bg-gray-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] border border-gray-200 flex items-center gap-1">
-🔲 <span id="expandBtnText">تكبير</span>
+<button
+onclick="toggleExpandBoard()"
+id="expandBtn"
+class="bg-gray-100 hover:bg-gray-200 text-slate-700 px-2 py-1 rounded-lg text-[11px] border border-gray-200 flex items-center gap-1">
+
+🔲
+<span id="expandBtnText">تكبير</span>
+
 </button>
+
 
 <div class="flex items-center gap-1.5 relative">
 
+<!-- القلم -->
+
 <div class="relative">
 
-<button onclick="togglePenMenu()" class="bg-gray-100 text-slate-700 p-1.5 rounded-lg border border-gray-200 flex items-center gap-1">
-✏️ <span id="currentColorIndicator" class="w-3 h-3 rounded-full bg-black inline-block border border-white"></span>
+<button
+onclick="togglePenMenu()"
+class="bg-gray-100 text-slate-700 p-1.5 rounded-lg border border-gray-200 flex items-center gap-1">
+
+✏️
+
+<span
+id="currentColorIndicator"
+class="w-3 h-3 rounded-full bg-black inline-block border border-white">
+</span>
+
 </button>
 
-<div id="penMenu" class="absolute top-9 left-0 bg-white border border-gray-200 rounded-2xl shadow-2xl hidden w-36 z-50 p-2.5 text-xs space-y-2">
+
+<div
+id="penMenu"
+class="absolute top-9 left-0 bg-white border border-gray-200 rounded-2xl shadow-2xl hidden w-36 z-50 p-2.5 text-xs space-y-2">
 
 <div class="font-bold text-slate-800 border-b pb-1 text-[11px]">
 لون القلم:
@@ -55,19 +185,30 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6}
 <div class="grid grid-cols-5 gap-1 justify-items-center py-0.5">
 
 <button onclick="setPenColor('#000000')" class="w-4 h-4 rounded-full bg-black border"></button>
+
 <button onclick="setPenColor('#2563eb')" class="w-4 h-4 rounded-full bg-blue-600 border"></button>
+
 <button onclick="setPenColor('#dc2626')" class="w-4 h-4 rounded-full bg-red-600 border"></button>
+
 <button onclick="setPenColor('#16a34a')" class="w-4 h-4 rounded-full bg-green-600 border"></button>
+
 <button onclick="setPenColor('#9333ea')" class="w-4 h-4 rounded-full bg-purple-600 border"></button>
 
 </div>
 
 <div class="flex items-center justify-between pt-1 border-t text-slate-600">
+
 <span class="text-[10px]">مخصص:</span>
 
 <label class="cursor-pointer bg-gradient-to-r from-red-500 via-green-500 to-blue-500 w-6 h-4 rounded-md flex items-center justify-center text-[9px] text-white">
+
 🎨
-<input type="color" onchange="setPenColor(this.value)" class="opacity-0 absolute w-0 h-0">
+
+<input
+type="color"
+onchange="setPenColor(this.value)"
+class="opacity-0 absolute w-0 h-0">
+
 </label>
 
 </div>
@@ -78,33 +219,3159 @@ body{font-family:system-ui,-apple-system,sans-serif;background:#f3f4f6}
 
 <div class="flex justify-between gap-1">
 
-<button onclick="setLineWidth(2)" class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
+<button
+onclick="setLineWidth(2)"
+class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
 رفيع
 </button>
 
-<button onclick="setLineWidth(4)" class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
+<button
+onclick="setLineWidth(4)"
+class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
 وسط
 </button>
 
-<button onclick="setLineWidth(8)" class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
+<button
+onclick="setLineWidth(8)"
+class="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] w-full">
 عريض
 </button>
 
 </div>
+
 </div>
 </div>
+
+
+<!-- إضافة -->
 
 <div class="relative">
 
-<button onclick="toggleAddMenu()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
-<span>+</span><span>إضافة</span>
+<button
+onclick="toggleAddMenu()"
+class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+
+<span>+</span>
+<span>إضافة</span>
+
 </button>
 
-<div id="addMenu" class="absolute top-9 left-0 bg-white border border-gray-200 rounded-2xl shadow-2xl hidden w-44 z-50 p-1.5 space-y-0.5">
 
-<button onclick="document.getElementById('videoInputReal').click()" class="w-full text-right px-2.5 py-1.5 hover:bg-indigo-50 rounded-xl text-slate-700 text-[11px]">
+<div
+id="addMenu"
+class="absolute top-9 left-0 bg-white border border-gray-200 rounded-2xl shadow-2xl hidden w-48 z-50 p-1.5 space-y-0.5">
+
+<button
+onclick="document.getElementById('videoInputReal').click()"
+class="w-full text-right px-2.5 py-2 hover:bg-indigo-50 rounded-xl text-slate-700 text-[11px]">
+
 🎬 رفع فيديو للسبورة
+
 </button>
+
+<input
+type="file"
+id="videoInputReal"
+accept="video/*"
+onchange="handleVideoToBoard(this)"
+class="hidden">
+
+
+<button
+onclick="document.getElementById('imageInputReal').click()"
+class="w-full text-right px-2.5 py-2 hover:bg-indigo-50 rounded-xl text-slate-700 text-[11px]">
+
+🖼️ رفع صورة للسبورة
+
+</button>
+
+<input
+type="file"
+id="imageInputReal"
+accept="image/*"
+onchange="handleImageToBoard(this)"
+class="hidden">
+
+
+<button
+onclick="document.getElementById('audioInputReal').click()"
+class="w-full text-right px-2.5 py-2 hover:bg-indigo-50 rounded-xl text-slate-700 text-[11px]">
+
+🎵 إرسال صوت
+
+</button>
+
+<input
+type="file"
+id="audioInputReal"
+accept="audio/*"
+onchange="handleAudioToChat(this)"
+class="hidden">
+
+
+<button
+onclick="toggleTextModal()"
+class="w-full text-right px-2.5 py-2 hover:bg-indigo-50 rounded-xl text-slate-800 font-bold text-[11px]">
+
+💬 النصوص الجاهزة
+
+</button>
+
+</div>
+</div>
+
+</div>
+
+
+<!-- منطقة السبورة -->
+
+<div
+class="absolute inset-x-2 top-11 bottom-7 bg-amber-50/20 rounded-xl border border-dashed border-gray-300 overflow-hidden flex items-center justify-center z-10">
+
+<img
+id="boardImage"
+class="w-full h-full object-contain absolute hidden z-10 rounded-lg">
+
+<video
+id="boardVideo"
+controls
+playsinline
+preload="auto"
+class="w-full h-full object-contain absolute hidden z-10 rounded-lg bg-black">
+</video>
+
+<canvas
+id="whiteboardCanvas"
+class="w-full h-full absolute inset-0 z-20">
+</canvas>
+
+</div>
+
+
+<div class="flex justify-between items-center text-[11px] text-gray-500 px-1 mt-auto pt-1 z-30">
+
+<button
+id="clearMediaBtn"
+onclick="clearBoardMedia()"
+class="text-amber-600 hover:bg-amber-50 px-1.5 py-0.5 rounded font-medium hidden">
+
+❌ إزالة الوسائط
+
+</button>
+
+<button
+onclick="clearCanvas()"
+class="text-red-500 hover:bg-red-50 px-1.5 py-0.5 rounded font-medium mr-auto">
+
+🗑️ مسح الرسم
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- الكاميرا -->
+
+<div
+id="cameraBox"
+class="w-1/2 h-56 bg-slate-900 rounded-2xl relative overflow-hidden shadow-sm flex flex-col items-center justify-center border border-gray-300 board-transition">
+
+<div class="absolute top-2 left-2 z-30">
+
+<button
+onclick="toggleExpandCamera()"
+id="expandCameraBtn"
+class="bg-black/60 text-white px-2 py-0.5 rounded-md text-[10px]">
+
+🔲
+<span id="expandCameraBtnText">تكبير</span>
+
+</button>
+
+</div>
+
+<div
+id="cameraStatus"
+class="absolute top-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-md z-20">
+
+🔴 الكاميرا متوقفة
+
+</div>
+
+
+<video
+id="cameraVideo"
+autoplay
+playsinline
+muted
+class="absolute inset-0 w-full h-full object-cover hidden">
+</video>
+
+
+<div
+id="cameraPlaceholder"
+class="text-slate-400 text-xs flex flex-col items-center gap-2 z-20 p-2 text-center">
+
+<span class="text-3xl">📹</span>
+
+<span class="text-[11px]">
+كاميرا البث المباشر
+</span>
+
+<button
+onclick="startCamera()"
+class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl font-bold text-[11px]">
+
+تشغيل الكاميرا
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ===================== المحادثة ===================== -->
+
+<div
+id="chatContainer"
+class="flex-1 p-3 overflow-y-auto space-y-3 bg-white scrollbar">
+
+<div class="bg-indigo-50 border border-indigo-100 p-3 rounded-2xl rounded-tl-none text-xs chat-message">
+
+<span class="text-[10px] text-indigo-600 font-bold block">
+[النظام]
+</span>
+
+<p class="text-slate-800">
+أهلاً بك، تم إعداد نافذة المساعد الذكي.
+</p>
+
+</div>
+
+</div>
+
+
+<!-- ===================== إرسال رسالة ===================== -->
+
+<div class="p-2 bg-white border-t border-gray-200 flex gap-2 shrink-0">
+
+<input
+type="text"
+id="messageInput"
+placeholder="اكتب رسالة أو سؤال هنا..."
+class="flex-1 bg-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-indigo-500"
+onkeypress="if(event.key==='Enter'){event.preventDefault();sendMessage()}">
+
+<button
+onclick="sendMessage()"
+class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-xs font-bold">
+
+إرسال
+
+</button>
+
+</div>
+
+
+<!-- ===================== الأزرار السفلية ===================== -->
+
+<div
+class="bg-white border-t border-gray-200 p-2 grid grid-cols-4 gap-1 text-center shrink-0">
+
+<button
+onclick="exitClassroom()"
+class="flex flex-col items-center justify-center p-2 rounded-xl text-red-600 hover:bg-red-50">
+
+<span class="text-lg">🚪</span>
+<span class="text-[10px] mt-1">خروج</span>
+
+</button>
+
+
+<button
+onclick="openToolsModal()"
+class="flex flex-col items-center justify-center p-2 rounded-xl text-indigo-600 hover:bg-indigo-50">
+
+<span class="text-lg">🧰</span>
+<span class="text-[10px] mt-1">الأدوات</span>
+
+</button>
+
+
+<button
+onclick="toggleGeminiModal()"
+class="flex flex-col items-center justify-center p-2 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100">
+
+<span class="text-lg">✨</span>
+<span class="text-[10px] mt-1 font-bold">المساعد الذكي</span>
+
+</button>
+
+
+<button
+onclick="openSmartRecorder()"
+class="flex flex-col items-center justify-center p-2 rounded-xl text-emerald-700 hover:bg-emerald-50">
+
+<span class="text-lg">🎙️</span>
+<span class="text-[10px] mt-1 font-bold">التسجيل الذكي</span>
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     النصوص الجاهزة
+========================================================= -->
+
+<div
+id="textModal"
+class="fixed inset-0 bg-black/55 hidden z-50 flex items-center justify-center p-4 modal-backdrop">
+
+<div class="bg-white rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+
+<div class="flex justify-between items-center border-b pb-2">
+
+<h3 class="font-bold text-slate-800 text-sm">
+💬 النصوص الجاهزة والذكية
+</h3>
+
+<button
+onclick="toggleTextModal()"
+class="text-gray-400 font-bold">
+
+✕
+
+</button>
+
+</div>
+
+<div
+id="quickTextList"
+class="space-y-1.5 max-h-60 overflow-y-auto scrollbar">
+</div>
+
+<button
+onclick="toggleTextModal()"
+class="w-full bg-gray-100 hover:bg-gray-200 py-2 rounded-xl text-xs font-bold">
+
+إغلاق
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     الأدوات
+========================================================= -->
+
+<div
+id="toolsModal"
+class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4 modal-backdrop">
+
+<div
+class="bg-white rounded-3xl w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+
+<div
+class="p-4 border-b bg-gradient-to-r from-indigo-50 to-purple-50 shrink-0">
+
+<div class="flex justify-between items-center">
+
+<div>
+
+<h2 class="font-bold text-indigo-950">
+🧰 الأدوات التفاعلية
+</h2>
+
+<p class="text-[10px] text-gray-500 mt-1">
+أدوات تساعدك في التعليم والدعوة والعمل الرقمي
+</p>
+
+</div>
+
+<button
+onclick="closeToolsModal()"
+class="text-gray-400 hover:text-red-500 text-lg font-bold">
+
+✕
+
+</button>
+
+</div>
+
+</div>
+
+
+<div
+class="p-4 overflow-y-auto scrollbar">
+
+<div
+class="grid grid-cols-3 gap-2 tool-grid">
+
+<!-- Facebook -->
+
+<button
+onclick="openTool('https://www.facebook.com/')"
+class="tool-card bg-blue-50 border border-blue-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">📘</span>
+<span class="text-[11px] font-bold text-blue-800">Facebook</span>
+
+</button>
+
+
+<!-- WhatsApp -->
+
+<button
+onclick="openTool('https://web.whatsapp.com/')"
+class="tool-card bg-green-50 border border-green-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">💬</span>
+<span class="text-[11px] font-bold text-green-800">WhatsApp</span>
+
+</button>
+
+
+<!-- Instagram -->
+
+<button
+onclick="openTool('https://www.instagram.com/')"
+class="tool-card bg-pink-50 border border-pink-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">📸</span>
+<span class="text-[11px] font-bold text-pink-800">Instagram</span>
+
+</button>
+
+
+<!-- TikTok -->
+
+<button
+onclick="openTool('https://www.tiktok.com/')"
+class="tool-card bg-gray-100 border border-gray-200 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">🎵</span>
+<span class="text-[11px] font-bold text-slate-800">TikTok</span>
+
+</button>
+
+
+<!-- X -->
+
+<button
+onclick="openTool('https://x.com/')"
+class="tool-card bg-slate-100 border border-slate-200 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">𝕏</span>
+<span class="text-[11px] font-bold text-slate-800">X</span>
+
+</button>
+
+
+<!-- YouTube -->
+
+<button
+onclick="openTool('https://www.youtube.com/')"
+class="tool-card bg-red-50 border border-red-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">▶️</span>
+<span class="text-[11px] font-bold text-red-800">YouTube</span>
+
+</button>
+
+
+<!-- Canva -->
+
+<button
+onclick="openTool('https://www.canva.com/')"
+class="tool-card bg-cyan-50 border border-cyan-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">🎨</span>
+<span class="text-[11px] font-bold text-cyan-800">Canva</span>
+
+</button>
+
+
+<!-- Google Translate -->
+
+<button
+onclick="openTool('https://translate.google.com/')"
+class="tool-card bg-blue-50 border border-blue-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">🌍</span>
+<span class="text-[11px] font-bold text-blue-800">الترجمة</span>
+
+</button>
+
+
+<!-- Google Forms -->
+
+<button
+onclick="openTool('https://forms.google.com/')"
+class="tool-card bg-purple-50 border border-purple-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">📝</span>
+<span class="text-[11px] font-bold text-purple-800">Google Forms</span>
+
+</button>
+
+
+<!-- Google Drive -->
+
+<button
+onclick="openTool('https://drive.google.com/')"
+class="tool-card bg-yellow-50 border border-yellow-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">📁</span>
+<span class="text-[11px] font-bold text-yellow-800">Google Drive</span>
+
+</button>
+
+
+<!-- Google -->
+
+<button
+onclick="openTool('https://www.google.com/')"
+class="tool-card bg-gray-50 border border-gray-200 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">🔎</span>
+<span class="text-[11px] font-bold text-slate-800">Google</span>
+
+</button>
+
+
+<!-- ElevenLabs -->
+
+<button
+onclick="openTool('https://elevenlabs.io/')"
+class="tool-card bg-violet-50 border border-violet-100 rounded-2xl p-3 flex flex-col items-center gap-1">
+
+<span class="text-3xl">🔊</span>
+<span class="text-[11px] font-bold text-violet-800">ElevenLabs</span>
+
+</button>
+
+</div>
+
+
+<div class="mt-4 bg-slate-50 border border-slate-200 rounded-2xl p-3">
+
+<div class="flex items-center gap-2">
+
+<span class="text-xl">💡</span>
+
+<div>
+
+<p class="font-bold text-slate-700 text-xs">
+ملاحظة
+</p>
+
+<p class="text-[10px] text-gray-500 mt-1">
+عند الضغط على أي أداة سيتم فتحها في نافذة جديدة.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="p-3 border-t bg-white shrink-0">
+
+<button
+onclick="closeToolsModal()"
+class="w-full bg-gray-100 hover:bg-gray-200 py-2.5 rounded-xl text-xs font-bold">
+
+إغلاق الأدوات
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     المساعد الذكي
+========================================================= -->
+
+<div
+id="geminiModal"
+class="fixed inset-0 bg-black/55 hidden z-50 flex items-center justify-center p-4 modal-backdrop">
+
+<div
+class="bg-white rounded-3xl w-full max-w-sm h-[500px] flex flex-col shadow-2xl overflow-hidden">
+
+<div
+class="flex justify-between items-center border-b p-3 bg-purple-50 shrink-0">
+
+<div class="flex items-center gap-1.5">
+
+<span class="text-lg">✨</span>
+
+<h3 class="font-bold text-purple-900 text-xs">
+المساعد الذكي
+</h3>
+
+</div>
+
+
+<div class="flex items-center gap-1.5">
+
+<select
+id="aiModelSelect"
+class="bg-white border border-purple-200 rounded-lg px-2 py-1 text-[11px]">
+
+<option value="gemini">
+Google Gemini
+</option>
+
+<option value="chatgpt">
+OpenAI ChatGPT
+</option>
+
+</select>
+
+
+<button
+onclick="toggleGeminiModal()"
+class="text-gray-400 font-bold">
+
+✕
+
+</button>
+
+</div>
+
+</div>
+
+
+<div
+id="geminiChatContainer"
+class="flex-1 p-3 overflow-y-auto space-y-2.5 bg-gray-50 text-xs scrollbar">
+
+<div class="bg-purple-100 border border-purple-200 p-2.5 rounded-2xl">
+
+<span class="text-[9px] text-purple-700 font-bold block">
+[AI Assistant]
+</span>
+
+<p>
+أهلاً بكِ! اختاري النموذج واكتبي سؤالك.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="p-2.5 bg-white border-t flex gap-2 shrink-0">
+
+<input
+type="text"
+id="geminiInput"
+placeholder="اسأل الذكاء الاصطناعي..."
+class="flex-1 bg-gray-100 border rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500"
+onkeypress="if(event.key==='Enter'){event.preventDefault();sendRealAIMessage()}">
+
+<button
+onclick="sendRealAIMessage()"
+class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2 rounded-xl text-xs font-bold">
+
+إرسال
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     التسجيل الذكي
+========================================================= -->
+
+<div
+id="smartRecorderModal"
+class="fixed inset-0 bg-black/60 hidden z-[70] flex items-center justify-center p-4 modal-backdrop">
+
+<div
+class="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden">
+
+<div class="bg-gradient-to-r from-emerald-50 to-teal-50 border-b p-4">
+
+<div class="flex justify-between items-center">
+
+<div>
+
+<h2 class="font-bold text-emerald-900 text-sm">
+🎙️ التسجيل الذكي
+</h2>
+
+<p class="text-[10px] text-gray-500 mt-1">
+ترجمة الرسالة وإرسالها كصوت فقط
+</p>
+
+</div>
+
+<button
+onclick="closeSmartRecorder()"
+class="text-gray-400 hover:text-red-500 font-bold text-lg">
+
+✕
+
+</button>
+
+</div>
+
+</div>
+
+
+<div class="p-4 space-y-4">
+
+<div>
+
+<label class="block text-xs font-bold text-slate-700 mb-1.5">
+🌍 لغة الصوت
+</label>
+
+<select
+id="smartLanguage"
+class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs">
+
+<option value="en">
+🇬🇧 الإنجليزية
+</option>
+
+<option value="es">
+🇪🇸 الإسبانية
+</option>
+
+<option value="it">
+🇮🇹 الإيطالية
+</option>
+
+<option value="fr">
+🇫🇷 الفرنسية
+</option>
+
+</select>
+
+</div>
+
+
+<div>
+
+<label class="block text-xs font-bold text-slate-700 mb-1.5">
+✍️ اكتب رسالة
+</label>
+
+<textarea
+id="smartTextInput"
+rows="3"
+placeholder="مثال: مرحباً، كيف حالك؟"
+class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs resize-none">
+</textarea>
+
+<button
+onclick="translateTextAndSendAudio()"
+id="smartTextButton"
+class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-xl text-xs font-bold">
+
+🔊 تحويل النص إلى صوت وإرسال
+
+</button>
+
+</div>
+
+
+<div class="relative flex items-center">
+
+<div class="flex-1 border-t"></div>
+
+<span class="px-3 text-[10px] text-gray-400">
+أو
+</span>
+
+<div class="flex-1 border-t"></div>
+
+</div>
+
+
+<div class="bg-gray-50 border border-gray-200 rounded-2xl p-4 text-center">
+
+<div
+id="recordStatus"
+class="text-[11px] text-gray-500 mb-3">
+
+اضغطي على التسجيل وابدئي الكلام
+
+</div>
+
+
+<button
+id="recordButton"
+onclick="toggleRecording()"
+class="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white text-2xl shadow-lg mx-auto">
+
+🎙️
+
+</button>
+
+
+<div
+id="recordTimer"
+class="text-xs font-bold text-red-600 mt-3 hidden">
+
+00:00
+
+</div>
+
+
+<button
+id="convertRecordingButton"
+onclick="convertRecordedAudio()"
+class="w-full mt-3 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-xs font-bold hidden">
+
+🌍 تحويل وإرسال إلى المحادثة
+
+</button>
+
+
+<audio
+id="recordPreview"
+controls
+class="w-full mt-3 hidden h-9">
+</audio>
+
+</div>
+
+
+<div
+id="smartMessage"
+class="text-[10px] text-center min-h-[16px]">
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   النصوص
+========================================================= */
+
+let quickTexts=[
+"أهلاً بك، هل نبدأ الدرس الآن؟",
+"أحسنت، إجابة صحيحة وموفقة!",
+"الرجاء التركيز في هذه النقطة المهمة.",
+"هل لديك أي استفسار عما شرحناه؟"
+];
+
+
+/* =========================================================
+   الخروج
+========================================================= */
+
+function exitClassroom(){
+
+if(!confirm("هل تريدين الخروج من الصف؟"))return;
+
+const classroom=document.getElementById("classroom");
+
+classroom.innerHTML=`
+
+<div class="flex flex-col items-center justify-center h-full bg-slate-900 text-white p-6 text-center">
+
+<div class="text-6xl mb-5">
+👋
+</div>
+
+<h2 class="text-xl font-bold mb-2">
+تم الخروج من الصف
+</h2>
+
+<p class="text-sm text-slate-400">
+تم إغلاق الصف التعليمي بنجاح.
+</p>
+
+</div>
+
+`;
+}
+
+
+/* =========================================================
+   التكبير
+========================================================= */
+
+let isExpanded=false;
+let isCameraExpanded=false;
+
+
+function toggleExpandBoard(){
+
+const cameraBox=document.getElementById("cameraBox");
+const board=document.getElementById("whiteboardWrapper");
+
+if(isCameraExpanded){
+isCameraExpanded=false;
+cameraBox.classList.remove("fullscreen-camera");
+cameraBox.classList.add("w-1/2");
+cameraBox.classList.remove("w-full","h-72");
+document.getElementById("expandCameraBtnText").innerText="تكبير";
+}
+
+isExpanded=!isExpanded;
+
+if(isExpanded){
+
+board.classList.add("fullscreen-board");
+
+cameraBox.classList.remove("w-1/2");
+cameraBox.classList.add("w-0","opacity-0","overflow-hidden","p-0","border-0");
+
+document.getElementById("expandBtnText").innerText="تصغير";
+
+}else{
+
+board.classList.remove("fullscreen-board");
+
+cameraBox.classList.add("w-1/2");
+cameraBox.classList.remove("w-0","opacity-0","overflow-hidden","p-0","border-0");
+
+document.getElementById("expandBtnText").innerText="تكبير";
+}
+
+setTimeout(resizeCanvas,350);
+}
+
+
+function toggleExpandCamera(){
+
+const cameraBox=document.getElementById("cameraBox");
+const board=document.getElementById("whiteboardWrapper");
+
+if(isExpanded){
+isExpanded=false;
+board.classList.remove("fullscreen-board");
+document.getElementById("expandBtnText").innerText="تكبير";
+}
+
+isCameraExpanded=!isCameraExpanded;
+
+if(isCameraExpanded){
+
+board.classList.remove("w-1/2");
+board.classList.add("w-0","opacity-0","overflow-hidden","p-0","border-0");
+
+cameraBox.classList.remove("w-1/2");
+cameraBox.classList.add("fullscreen-camera");
+
+document.getElementById("expandCameraBtnText").innerText="تصغير";
+
+}else{
+
+board.classList.add("w-1/2");
+board.classList.remove("w-0","opacity-0","overflow-hidden","p-0","border-0");
+
+cameraBox.classList.remove("fullscreen-camera");
+cameraBox.classList.add("w-1/2");
+
+document.getElementById("expandCameraBtnText").innerText="تكبير";
+}
+
+setTimeout(resizeCanvas,350);
+}
+
+
+/* =========================================================
+   القوائم
+========================================================= */
+
+function toggleAddMenu(){
+
+document.getElementById("addMenu").classList.toggle("hidden");
+
+document.getElementById("penMenu").classList.add("hidden");
+}
+
+
+function togglePenMenu(){
+
+document.getElementById("penMenu").classList.toggle("hidden");
+
+document.getElementById("addMenu").classList.add("hidden");
+}
+
+
+function toggleTextModal(){
+
+document.getElementById("textModal").classList.toggle("hidden");
+
+document.getElementById("addMenu").classList.add("hidden");
+
+renderQuickTexts();
+}
+
+
+function toggleGeminiModal(){
+
+document.getElementById("geminiModal").classList.toggle("hidden");
+
+if(!document.getElementById("geminiModal").classList.contains("hidden")){
+
+setTimeout(()=>{
+document.getElementById("geminiInput").focus();
+},200);
+
+}
+}
+
+
+/* =========================================================
+   الأدوات
+========================================================= */
+
+function openToolsModal(){
+
+document.getElementById("toolsModal").classList.remove("hidden");
+
+}
+
+
+function closeToolsModal(){
+
+document.getElementById("toolsModal").classList.add("hidden");
+
+}
+
+
+function openTool(url){
+
+window.open(url,"_blank","noopener,noreferrer");
+
+}
+
+
+/* =========================================================
+   تشغيل الكاميرا
+========================================================= */
+
+let cameraStream=null;
+
+
+async function startCamera(){
+
+const video=document.getElementById("cameraVideo");
+const placeholder=document.getElementById("cameraPlaceholder");
+const status=document.getElementById("cameraStatus");
+
+try{
+
+if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+
+throw new Error("NOT_SUPPORTED");
+
+}
+
+cameraStream=await navigator.mediaDevices.getUserMedia({
+video:true,
+audio:false
+});
+
+video.srcObject=cameraStream;
+
+video.classList.remove("hidden");
+placeholder.classList.add("hidden");
+
+status.innerHTML="🟢 الكاميرا تعمل";
+status.classList.remove("text-white");
+status.classList.add("text-green-400");
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"تعذر تشغيل الكاميرا.\n\nتأكدي من إعطاء المتصفح صلاحية الكاميرا وفتح الصفحة عبر HTTPS أو localhost."
+);
+
+}
+
+}
+
+
+function stopCamera(){
+
+if(cameraStream){
+
+cameraStream.getTracks().forEach(track=>track.stop());
+
+cameraStream=null;
+}
+
+const video=document.getElementById("cameraVideo");
+
+video.srcObject=null;
+video.classList.add("hidden");
+
+document.getElementById("cameraPlaceholder").classList.remove("hidden");
+
+document.getElementById("cameraStatus").innerHTML="🔴 الكاميرا متوقفة";
+
+}
+
+
+/* =========================================================
+   المساعد الذكي
+========================================================= */
+
+async function sendRealAIMessage(){
+
+const input=document.getElementById("geminiInput");
+
+const text=input.value.trim();
+
+if(!text)return;
+
+const model=document.getElementById("aiModelSelect").value;
+
+const chat=document.getElementById("geminiChatContainer");
+
+
+/* رسالة المستخدم */
+
+const userMessage=document.createElement("div");
+
+userMessage.className=
+"bg-white border p-2.5 rounded-2xl text-slate-800 max-w-[90%] mr-auto chat-message";
+
+userMessage.innerHTML=`
+
+<span class="text-[9px] text-slate-500 font-bold block">
+[أنت]
+</span>
+
+<p class="whitespace-pre-wrap">
+${escapeHTML(text)}
+</p>
+
+`;
+
+chat.appendChild(userMessage);
+
+input.value="";
+
+
+/* رسالة الانتظار */
+
+const loading=document.createElement("div");
+
+loading.className=
+"bg-purple-100 border border-purple-200 p-2.5 rounded-2xl max-w-[90%] chat-message";
+
+loading.innerHTML=`
+
+<span class="text-[9px] text-purple-700 font-bold block">
+[${model==="gemini"?"GEMINI":"CHATGPT"}]
+</span>
+
+<p>
+⏳ جاري الاتصال...
+</p>
+
+`;
+
+chat.appendChild(loading);
+
+chat.scrollTop=chat.scrollHeight;
+
+
+try{
+
+let reply="";
+
+
+if(model==="gemini"){
+
+/*
+ضع مفتاح Gemini هنا
+*/
+
+const geminiApiKey=
+"ضع_مفتاح_GEMINI_هنا";
+
+
+if(
+!geminiApiKey ||
+geminiApiKey==="ضع_مفتاح_GEMINI_هنا"
+){
+
+throw new Error(
+"NO_GEMINI_KEY"
+);
+
+}
+
+
+const response=await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key="+
+encodeURIComponent(geminiApiKey),
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+contents:[
+{
+parts:[
+{
+text:text
+}
+]
+}
+]
+})
+}
+);
+
+
+const data=await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data?.error?.message ||
+"GEMINI_ERROR"
+);
+
+}
+
+
+reply=
+data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+"لم يصل رد من Gemini.";
+
+
+}else{
+
+
+/*
+ضع مفتاح OpenAI هنا
+*/
+
+const openAiApiKey=
+"ضع_مفتاح_OPENAI_هنا";
+
+
+if(
+!openAiApiKey ||
+openAiApiKey==="ضع_مفتاح_OPENAI_هنا"
+){
+
+throw new Error(
+"NO_OPENAI_KEY"
+);
+
+}
+
+
+const response=await fetch(
+"https://api.openai.com/v1/chat/completions",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":
+"Bearer "+openAiApiKey
+},
+body:JSON.stringify({
+model:"gpt-4o-mini",
+messages:[
+{
+role:"user",
+content:text
+}
+]
+})
+}
+);
+
+
+const data=await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data?.error?.message ||
+"OPENAI_ERROR"
+);
+
+}
+
+
+reply=
+data?.choices?.[0]?.message?.content ||
+"لم يصل رد من ChatGPT.";
+
+}
+
+
+loading.innerHTML=`
+
+<span class="text-[9px] text-purple-700 font-bold block">
+[${model==="gemini"?"GEMINI":"CHATGPT"}]
+</span>
+
+<p class="whitespace-pre-wrap">
+${escapeHTML(reply)}
+</p>
+
+`;
+
+}catch(error){
+
+console.error(error);
+
+let message=
+"❌ تعذر الاتصال بالمساعد الذكي.";
+
+if(error.message==="NO_GEMINI_KEY"){
+
+message=
+"⚠️ لم يتم وضع مفتاح Gemini بعد. ضعي مفتاح API في المكان المحدد داخل الكود.";
+
+}
+
+if(error.message==="NO_OPENAI_KEY"){
+
+message=
+"⚠️ لم يتم وضع مفتاح OpenAI بعد. ضعي مفتاح API في المكان المحدد داخل الكود.";
+
+}
+
+
+loading.innerHTML=`
+
+<span class="text-[9px] text-red-700 font-bold block">
+[خطأ]
+</span>
+
+<p class="text-red-600">
+${escapeHTML(message)}
+</p>
+
+`;
+
+}
+
+
+chat.scrollTop=chat.scrollHeight;
+
+}
+
+
+/* =========================================================
+   التسجيل الذكي
+========================================================= */
+
+let mediaRecorder=null;
+let recordedChunks=[];
+let recordedBlob=null;
+let currentStream=null;
+let recognition=null;
+let recognitionText="";
+let isRecording=false;
+let recordingStartTime=null;
+let recordingTimer=null;
+
+
+const languageData={
+
+en:{
+name:"الإنجليزية",
+speech:"en-US"
+},
+
+es:{
+name:"الإسبانية",
+speech:"es-ES"
+},
+
+it:{
+name:"الإيطالية",
+speech:"it-IT"
+},
+
+fr:{
+name:"الفرنسية",
+speech:"fr-FR"
+}
+
+};
+
+
+function openSmartRecorder(){
+
+document
+.getElementById("smartRecorderModal")
+.classList.remove("hidden");
+
+setSmartMessage("");
+
+}
+
+
+function closeSmartRecorder(){
+
+if(isRecording){
+stopRecording();
+}
+
+if(currentStream){
+
+currentStream.getTracks().forEach(track=>track.stop());
+
+currentStream=null;
+
+}
+
+document
+.getElementById("smartRecorderModal")
+.classList.add("hidden");
+
+}
+
+
+function setSmartMessage(message,error=false){
+
+const box=document.getElementById("smartMessage");
+
+box.innerText=message;
+
+box.className=
+"text-[10px] text-center min-h-[16px] "+
+(error?"text-red-600":"text-emerald-700");
+
+}
+
+
+/* =========================================================
+   التسجيل
+========================================================= */
+
+async function toggleRecording(){
+
+if(isRecording){
+
+stopRecording();
+
+}else{
+
+await startRecording();
+
+}
+
+}
+
+
+async function startRecording(){
+
+if(isRecording)return;
+
+recordedChunks=[];
+recordedBlob=null;
+recognitionText="";
+
+const button=document.getElementById("recordButton");
+
+const status=document.getElementById("recordStatus");
+
+const preview=document.getElementById("recordPreview");
+
+const convertButton=
+document.getElementById("convertRecordingButton");
+
+const timer=document.getElementById("recordTimer");
+
+
+convertButton.classList.add("hidden");
+
+preview.classList.add("hidden");
+
+preview.removeAttribute("src");
+
+
+try{
+
+if(
+location.protocol!=="https:" &&
+location.hostname!=="localhost" &&
+location.hostname!=="127.0.0.1"
+){
+
+setSmartMessage(
+"⚠️ التسجيل يحتاج HTTPS أو localhost. إذا فتحتِ الملف مباشرة من الهاتف فقد يمنع المتصفح الميكروفون.",
+true
+);
+
+return;
+
+}
+
+
+if(
+!navigator.mediaDevices ||
+!navigator.mediaDevices.getUserMedia
+){
+
+throw new Error("MIC_NOT_SUPPORTED");
+
+}
+
+
+if(!window.MediaRecorder){
+
+throw new Error(
+"MEDIA_RECORDER_NOT_SUPPORTED"
+);
+
+}
+
+
+currentStream=
+await navigator.mediaDevices.getUserMedia({
+
+audio:{
+echoCancellation:true,
+noiseSuppression:true,
+autoGainControl:true
+}
+
+});
+
+
+let mimeType="";
+
+
+const supportedTypes=[
+
+"audio/webm;codecs=opus",
+
+"audio/webm",
+
+"audio/mp4",
+
+"audio/ogg;codecs=opus"
+
+];
+
+
+for(const type of supportedTypes){
+
+if(MediaRecorder.isTypeSupported(type)){
+
+mimeType=type;
+break;
+
+}
+
+}
+
+
+mediaRecorder=
+mimeType
+?
+new MediaRecorder(
+currentStream,
+{mimeType:mimeType}
+)
+:
+new MediaRecorder(currentStream);
+
+
+mediaRecorder.ondataavailable=function(event){
+
+if(event.data && event.data.size>0){
+
+recordedChunks.push(event.data);
+
+}
+
+};
+
+
+mediaRecorder.onstop=function(){
+
+const finalType=
+mediaRecorder.mimeType ||
+mimeType ||
+"audio/webm";
+
+
+recordedBlob=
+new Blob(
+recordedChunks,
+{type:finalType}
+);
+
+
+if(recordedBlob.size===0){
+
+setSmartMessage(
+"لم يتم التقاط أي صوت. حاولي مرة أخرى.",
+true
+);
+
+return;
+
+}
+
+
+const audioURL=
+URL.createObjectURL(recordedBlob);
+
+
+preview.src=audioURL;
+
+preview.classList.remove("hidden");
+
+convertButton.classList.remove("hidden");
+
+
+status.innerText=
+"✅ تم التسجيل. يمكنك سماع التسجيل أو تحويله.";
+
+
+setSmartMessage(
+"تم حفظ التسجيل بنجاح."
+);
+
+
+if(currentStream){
+
+currentStream
+.getTracks()
+.forEach(track=>track.stop());
+
+currentStream=null;
+
+}
+
+};
+
+
+mediaRecorder.onerror=function(){
+
+setSmartMessage(
+"حدث خطأ أثناء التسجيل.",
+true
+);
+
+
+if(currentStream){
+
+currentStream
+.getTracks()
+.forEach(track=>track.stop());
+
+currentStream=null;
+
+}
+
+};
+
+
+mediaRecorder.start(250);
+
+isRecording=true;
+
+recordingStartTime=Date.now();
+
+
+button.innerText="⏹️";
+
+button.classList.add(
+"recording-pulse"
+);
+
+
+status.innerText=
+"🔴 جاري التسجيل... تحدثي الآن";
+
+
+timer.classList.remove("hidden");
+
+
+recordingTimer=
+setInterval(
+updateRecordingTimer,
+500
+);
+
+
+setSmartMessage(
+"🎙️ التسجيل يعمل الآن... تحدثي بوضوح."
+);
+
+
+startSpeechRecognition();
+
+
+}catch(error){
+
+console.error(
+"Recording error:",
+error
+);
+
+
+isRecording=false;
+
+
+if(currentStream){
+
+currentStream
+.getTracks()
+.forEach(track=>track.stop());
+
+currentStream=null;
+
+}
+
+
+if(
+error.name==="NotAllowedError" ||
+error.name==="PermissionDeniedError"
+){
+
+setSmartMessage(
+"❌ تم رفض صلاحية الميكروفون. اسمحي للمتصفح بالميكروفون ثم أعيدي المحاولة.",
+true
+);
+
+}else if(
+error.name==="NotFoundError"
+){
+
+setSmartMessage(
+"❌ لم يتم العثور على ميكروفون في الجهاز.",
+true
+);
+
+}else{
+
+setSmartMessage(
+"❌ تعذر تشغيل التسجيل. تأكدي من HTTPS وصلاحية الميكروفون.",
+true
+);
+
+}
+
+}
+
+}
+
+
+/* =========================================================
+   إيقاف التسجيل
+========================================================= */
+
+function stopRecording(){
+
+if(!mediaRecorder)return;
+
+
+if(mediaRecorder.state!=="inactive"){
+
+mediaRecorder.stop();
+
+}
+
+
+stopSpeechRecognition();
+
+
+isRecording=false;
+
+
+clearInterval(recordingTimer);
+
+recordingTimer=null;
+
+
+const button=
+document.getElementById("recordButton");
+
+const timer=
+document.getElementById("recordTimer");
+
+
+button.innerText="🎙️";
+
+button.classList.remove(
+"recording-pulse"
+);
+
+
+timer.classList.add("hidden");
+
+
+recordingStartTime=null;
+
+}
+
+
+/* =========================================================
+   المؤقت
+========================================================= */
+
+function updateRecordingTimer(){
+
+if(!recordingStartTime)return;
+
+
+const seconds=
+Math.floor(
+(Date.now()-recordingStartTime)/1000
+);
+
+
+const minutes=
+String(
+Math.floor(seconds/60)
+).padStart(2,"0");
+
+
+const secs=
+String(
+seconds%60
+).padStart(2,"0");
+
+
+document.getElementById(
+"recordTimer"
+).innerText=
+`${minutes}:${secs}`;
+
+}
+
+
+/* =========================================================
+   التعرف على الكلام
+========================================================= */
+
+function startSpeechRecognition(){
+
+const SpeechRecognition=
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
+
+
+if(!SpeechRecognition)return;
+
+
+try{
+
+recognition=
+new SpeechRecognition();
+
+
+recognition.lang="ar-SA";
+
+recognition.continuous=true;
+
+recognition.interimResults=false;
+
+
+recognition.onresult=function(event){
+
+for(
+let i=event.resultIndex;
+i<event.results.length;
+i++
+){
+
+if(event.results[i].isFinal){
+
+recognitionText+=
+" "+
+event.results[i][0].transcript;
+
+}
+
+}
+
+};
+
+
+recognition.onerror=function(){
+};
+
+
+recognition.onend=function(){
+
+if(isRecording && recognition){
+
+try{
+
+recognition.start();
+
+}catch(e){}
+
+}
+
+};
+
+
+recognition.start();
+
+
+}catch(error){
+
+recognition=null;
+
+}
+
+}
+
+
+function stopSpeechRecognition(){
+
+if(!recognition)return;
+
+
+try{
+
+recognition.onend=null;
+
+recognition.stop();
+
+}catch(e){}
+
+
+recognition=null;
+
+}
+
+
+/* =========================================================
+   الترجمة
+========================================================= */
+
+async function translateText(
+text,
+targetLanguage
+){
+
+const url=
+"https://api.mymemory.translated.net/get"+
+"?q="+
+encodeURIComponent(text)+
+"&langpair=ar|"+
+encodeURIComponent(targetLanguage);
+
+
+const response=
+await fetch(url);
+
+
+if(!response.ok){
+
+throw new Error(
+"TRANSLATION_HTTP_ERROR"
+);
+
+}
+
+
+const data=
+await response.json();
+
+
+const translated=
+data?.responseData?.translatedText;
+
+
+if(!translated){
+
+throw new Error(
+"TRANSLATION_EMPTY"
+);
+
+}
+
+
+return translated;
+
+}
+
+
+/* =========================================================
+   كتابة → ترجمة → صوت
+========================================================= */
+
+async function translateTextAndSendAudio(){
+
+const input=
+document.getElementById(
+"smartTextInput"
+);
+
+const button=
+document.getElementById(
+"smartTextButton"
+);
+
+
+const text=
+input.value.trim();
+
+
+const language=
+document.getElementById(
+"smartLanguage"
+).value;
+
+
+if(!text){
+
+setSmartMessage(
+"اكتبي النص أولاً.",
+true
+);
+
+return;
+
+}
+
+
+button.disabled=true;
+
+button.innerText=
+"⏳ جاري التحويل...";
+
+
+setSmartMessage(
+"جاري ترجمة النص..."
+);
+
+
+try{
+
+const translated=
+await translateText(
+text,
+language
+);
+
+
+setSmartMessage(
+"تمت الترجمة، جاري تجهيز الصوت..."
+);
+
+
+await sendTranslatedTextAsAudio(
+translated,
+language
+);
+
+
+input.value="";
+
+
+setSmartMessage(
+"✅ تم إرسال الصوت إلى المحادثة."
+);
+
+
+}catch(error){
+
+console.error(error);
+
+
+setSmartMessage(
+"تعذر تحويل النص. تأكدي من اتصال الإنترنت.",
+true
+);
+
+
+}finally{
+
+button.disabled=false;
+
+button.innerText=
+"🔊 تحويل النص إلى صوت وإرسال";
+
+}
+
+}
+
+
+/* =========================================================
+   إرسال الصوت المترجم
+========================================================= */
+
+async function sendTranslatedTextAsAudio(
+translatedText,
+language
+){
+
+const lang=
+languageData[language]?.speech ||
+"en-US";
+
+
+const audioURL=
+"https://translate.google.com/translate_tts"+
+"?ie=UTF-8"+
+"&client=tw-ob"+
+"&tl="+
+encodeURIComponent(language)+
+"&q="+
+encodeURIComponent(translatedText);
+
+
+addAudioToChat(
+audioURL,
+"🔊 الصوت المترجم",
+translatedText,
+lang
+);
+
+}
+
+
+/* =========================================================
+   التسجيل → ترجمة → صوت
+========================================================= */
+
+async function convertRecordedAudio(){
+
+if(!recordedBlob){
+
+setSmartMessage(
+"سجلي الصوت أولاً.",
+true
+);
+
+return;
+
+}
+
+
+const button=
+document.getElementById(
+"convertRecordingButton"
+);
+
+
+const language=
+document.getElementById(
+"smartLanguage"
+).value;
+
+
+button.disabled=true;
+
+button.innerText=
+"⏳ جاري التحويل...";
+
+
+try{
+
+let sourceText=
+recognitionText.trim();
+
+
+if(!sourceText){
+
+throw new Error(
+"NO_SPEECH_TEXT"
+);
+
+}
+
+
+setSmartMessage(
+"تم التعرف على الكلام، جاري الترجمة..."
+);
+
+
+const translated=
+await translateText(
+sourceText,
+language
+);
+
+
+setSmartMessage(
+"تمت الترجمة، جاري إرسال الصوت..."
+);
+
+
+await sendTranslatedTextAsAudio(
+translated,
+language
+);
+
+
+setSmartMessage(
+"✅ تم تحويل التسجيل وإرساله كصوت."
+);
+
+
+button.innerText=
+"✅ تم الإرسال";
+
+
+}catch(error){
+
+console.error(error);
+
+
+if(
+error.message==="NO_SPEECH_TEXT"
+){
+
+setSmartMessage(
+"تم التسجيل لكن لم أتمكن من قراءة الكلام. تحدثي بوضوح أثناء التسجيل.",
+true
+);
+
+}else{
+
+setSmartMessage(
+"تعذر تحويل التسجيل. تأكدي من الإنترنت ثم حاولي مرة أخرى.",
+true
+);
+
+}
+
+
+button.innerText=
+"🌍 تحويل وإرسال إلى المحادثة";
+
+}finally{
+
+button.disabled=false;
+
+}
+
+}
+
+
+/* =========================================================
+   الصوت في المحادثة
+========================================================= */
+
+function addAudioToChat(
+audioURL,
+title,
+translatedText="",
+lang=""
+){
+
+const chat=
+document.getElementById(
+"chatContainer"
+);
+
+
+const wrapper=
+document.createElement("div");
+
+
+wrapper.className=
+"bg-emerald-50 border border-emerald-200 p-3 rounded-2xl text-xs space-y-2 chat-message";
+
+
+const titleDiv=
+document.createElement("div");
+
+
+titleDiv.className=
+"flex items-center gap-2 font-bold text-emerald-800";
+
+
+titleDiv.innerHTML=
+`
+<span class="text-lg">🔊</span>
+<span>${escapeHTML(title)}</span>
+`;
+
+
+wrapper.appendChild(titleDiv);
+
+
+const audio=
+document.createElement("audio");
+
+
+audio.controls=true;
+
+audio.preload="auto";
+
+audio.className=
+"w-full h-9";
+
+audio.src=audioURL;
+
+
+if(translatedText){
+
+const textDiv=
+document.createElement("div");
+
+
+textDiv.className=
+"text-[10px] text-emerald-700 bg-white/60 rounded-xl p-2";
+
+
+textDiv.innerText=
+translatedText;
+
+
+wrapper.appendChild(textDiv);
+
+}
+
+
+audio.addEventListener(
+"error",
+function(){
+
+const errorText=
+document.createElement("div");
+
+
+errorText.className=
+"text-[10px] text-red-600";
+
+
+errorText.innerText=
+"تعذر تشغيل هذا الصوت.";
+
+
+wrapper.appendChild(errorText);
+
+},
+{once:true}
+);
+
+
+wrapper.appendChild(audio);
+
+chat.appendChild(wrapper);
+
+chat.scrollTop=
+chat.scrollHeight;
+
+}
+
+
+/* =========================================================
+   الملفات
+========================================================= */
+
+function handleAudioToChat(input){
+
+if(!input.files || !input.files[0])return;
+
+
+const file=
+input.files[0];
+
+
+const fileURL=
+URL.createObjectURL(file);
+
+
+addAudioToChat(
+fileURL,
+file.name || "ملف صوتي"
+);
+
+
+toggleAddMenu();
+
+
+input.value="";
+
+}
+
+
+function handleImageToBoard(input){
+
+if(!input.files || !input.files[0])return;
+
+
+const reader=
+new FileReader();
+
+
+reader.onload=function(e){
+
+const img=
+document.getElementById(
+"boardImage"
+);
+
+const video=
+document.getElementById(
+"boardVideo"
+);
+
+
+video.pause();
+
+video.removeAttribute("src");
+
+video.load();
+
+video.classList.add("hidden");
+
+
+img.src=e.target.result;
+
+img.classList.remove("hidden");
+
+
+document
+.getElementById("clearMediaBtn")
+.classList.remove("hidden");
+
+};
+
+
+reader.readAsDataURL(
+input.files[0]
+);
+
+
+toggleAddMenu();
+
+input.value="";
+
+}
+
+
+function handleVideoToBoard(input){
+
+if(!input.files || !input.files[0])return;
+
+
+const file=
+input.files[0];
+
+
+const fileURL=
+URL.createObjectURL(file);
+
+
+const img=
+document.getElementById(
+"boardImage"
+);
+
+const video=
+document.getElementById(
+"boardVideo"
+);
+
+
+img.src="";
+
+img.classList.add("hidden");
+
+
+video.src=fileURL;
+
+video.load();
+
+video.classList.remove("hidden");
+
+
+video.play().catch(()=>{});
+
+
+document
+.getElementById("clearMediaBtn")
+.classList.remove("hidden");
+
+
+toggleAddMenu();
+
+input.value="";
+
+}
+
+
+function clearBoardMedia(){
+
+const img=
+document.getElementById(
+"boardImage"
+);
+
+const video=
+document.getElementById(
+"boardVideo"
+);
+
+
+img.src="";
+
+img.classList.add("hidden");
+
+
+video.pause();
+
+video.removeAttribute("src");
+
+video.load();
+
+video.classList.add("hidden");
+
+
+document
+.getElementById("clearMediaBtn")
+.classList.add("hidden");
+
+}
+
+
+/* =========================================================
+   النصوص الجاهزة
+========================================================= */
+
+function renderQuickTexts(){
+
+const list=
+document.getElementById(
+"quickTextList"
+);
+
+
+list.innerHTML="";
+
+
+quickTexts.forEach(
+(text,index)=>{
+
+const wrapper=
+document.createElement("div");
+
+
+wrapper.className=
+"flex gap-1.5";
+
+
+const btn=
+document.createElement("button");
+
+
+btn.className=
+"flex-1 text-right bg-indigo-50 hover:bg-indigo-100 text-indigo-900 px-3 py-2 rounded-xl text-xs";
+
+
+btn.innerText=text;
+
+
+btn.onclick=function(){
+
+document
+.getElementById("messageInput")
+.value=text;
+
+
+toggleTextModal();
+
+};
+
+
+const deleteBtn=
+document.createElement("button");
+
+
+deleteBtn.className=
+"bg-red-50 hover:bg-red-100 text-red-500 px-2 rounded-xl text-xs";
+
+
+deleteBtn.innerText="🗑️";
+
+
+deleteBtn.onclick=function(){
+
+quickTexts.splice(index,1);
+
+renderQuickTexts();
+
+};
+
+
+wrapper.appendChild(btn);
+
+wrapper.appendChild(deleteBtn);
+
+list.appendChild(wrapper);
+
+});
+
+}
+
+
+/* =========================================================
+   إرسال الرسائل
+========================================================= */
+
+function sendMessage(){
+
+const input=
+document.getElementById(
+"messageInput"
+);
+
+
+const text=
+input.value.trim();
+
+
+if(!text){
+
+input.focus();
+
+return;
+
+}
+
+
+const chat=
+document.getElementById(
+"chatContainer"
+);
+
+
+const message=
+document.createElement("div");
+
+
+message.className=
+"bg-gray-100 border border-gray-200 p-3 rounded-2xl text-xs chat-message";
+
+
+message.innerHTML=
+`
+
+<span class="text-[10px] text-slate-600 font-bold block">
+[أنت]
+</span>
+
+<p class="text-slate-800 whitespace-pre-wrap">
+${escapeHTML(text)}
+</p>
+
+`;
+
+
+chat.appendChild(message);
+
+
+chat.scrollTop=
+chat.scrollHeight;
+
+
+if(!quickTexts.includes(text)){
+
+quickTexts.push(text);
+
+}
+
+
+input.value="";
+
+input.focus();
+
+}
+
+
+/* =========================================================
+   السبورة
+========================================================= */
+
+const canvas=
+document.getElementById(
+"whiteboardCanvas"
+);
+
+
+const ctx=
+canvas.getContext("2d");
+
+
+function resizeCanvas(){
+
+const parent=
+canvas.parentElement;
+
+
+if(!parent)return;
+
+
+const oldCanvas=
+document.createElement("canvas");
+
+oldCanvas.width=
+canvas.width;
+
+oldCanvas.height=
+canvas.height;
+
+const oldCtx=
+oldCanvas.getContext("2d");
+
+
+if(canvas.width>0 && canvas.height>0){
+
+oldCtx.drawImage(
+canvas,
+0,
+0
+);
+
+}
+
+
+canvas.width=
+parent.clientWidth;
+
+canvas.height=
+parent.clientHeight;
+
+
+if(oldCanvas.width>0 && oldCanvas.height>0){
+
+ctx.drawImage(
+oldCanvas,
+0,
+0,
+oldCanvas.width,
+oldCanvas.height,
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+}
+
+
+ctx.strokeStyle=
+ctx.strokeStyle ||
+"#000000";
+
+
+ctx.lineWidth=
+ctx.lineWidth ||
+4;
+
+
+ctx.lineCap="round";
+
+ctx.lineJoin="round";
+
+}
+
+
+window.addEventListener(
+"load",
+resizeCanvas
+);
+
+
+window.addEventListener(
+"resize",
+resizeCanvas
+);
+
+
+let isDrawing=false;
+
+let lastX=0;
+
+let lastY=0;
+
+
+function getPointerPosition(e){
+
+const rect=
+canvas.getBoundingClientRect();
+
+
+let clientX=
+e.clientX ??
+(
+e.touches
+?
+e.touches[0].clientX
+:
+0
+);
+
+
+let clientY=
+e.clientY ??
+(
+e.touches
+?
+e.touches[0].clientY
+:
+0
+);
+
+
+return{
+
+x:
+clientX-rect.left,
+
+y:
+clientY-rect.top
+
+};
+
+}
+
+
+function startDrawing(e){
+
+isDrawing=true;
+
+
+const p=
+getPointerPosition(e);
+
+
+lastX=p.x;
+
+lastY=p.y;
+
+}
+
+
+function draw(e){
+
+if(!isDrawing)return;
+
+
+e.preventDefault();
+
+
+const p=
+getPointerPosition(e);
+
+
+ctx.beginPath();
+
+ctx.moveTo(
+lastX,
+lastY
+);
+
+ctx.lineTo(
+p.x,
+p.y
+);
+
+ctx.stroke();
+
+
+lastX=p.x;
+
+lastY=p.y;
+
+}
+
+
+function stopDrawing(){
+
+isDrawing=false;
+
+}
+
+
+function clearCanvas(){
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+}
+
+
+function setPenColor(color){
+
+ctx.strokeStyle=color;
+
+
+document
+.getElementById(
+"currentColorIndicator"
+)
+.style.backgroundColor=color;
+
+
+togglePenMenu();
+
+}
+
+
+function setLineWidth(width){
+
+ctx.lineWidth=width;
+
+togglePenMenu();
+
+}
+
+
+/* الفأرة */
+
+canvas.addEventListener(
+"mousedown",
+startDrawing
+);
+
+canvas.addEventListener(
+"mousemove",
+draw
+);
+
+canvas.addEventListener(
+"mouseup",
+stopDrawing
+);
+
+canvas.addEventListener(
+"mouseleave",
+stopDrawing
+);
+
+
+/* اللمس */
+
+canvas.addEventListener(
+"touchstart",
+startDrawing,
+{passive:false}
+);
+
+canvas.addEventListener(
+"touchmove",
+draw,
+{passive:false}
+);
+
+canvas.addEventListener(
+"touchend",
+stopDrawing
+);
+
+
+/* =========================================================
+   حماية النص
+========================================================= */
+
+function escapeHTML(text){
+
+return String(text)
+
+.replace(
+/&/g,
+"&amp;"
+)
+
+.replace(
+/</g,
+"&lt;"
+)
+
+.replace(
+/>/g,
+"&gt;"
+)
+
+.replace(
+/"/g,
+"&quot;"
+)
+
+.replace(
+/'/g,
+"&#039;"
+);
+
+}
+
+
+/* =========================================================
+   إغلاق النوافذ عند الضغط خارجها
+========================================================= */
+
+document.addEventListener(
+"click",
+function(e){
+
+const addMenu=
+document.getElementById("addMenu");
+
+const penMenu=
+document.getElementById("penMenu");
+
+const toolsModal=
+document.getElementById("toolsModal");
+
+const textModal=
+document.getElementById("textModal");
+
+const geminiModal=
+document.getElementById("geminiModal");
+
+const recorderModal=
+document.getElementById("smartRecorderModal");
+
+
+/* القوائم الصغيرة */
+
+if(
+!e.target.closest("#addMenu") &&
+!e.target.closest("[onclick='toggleAddMenu()']")
+){
+
+addMenu.classList.add("hidden");
+
+}
+
+
+if(
+!e.target.closest("#penMenu") &&
+!e.target.closest("[onclick='togglePenMenu()']")
+){
+
+penMenu.classList.add("hidden");
+
+}
+
+
+/* الضغط على خلفية النوافذ */
+
+if(
+e.target===toolsModal
+){
+
+closeToolsModal();
+
+}
+
+
+if(
+e.target===textModal
+){
+
+toggleTextModal();
+
+}
+
+
+if(
+e.target===geminiModal
+){
+
+toggleGeminiModal();
+
+}
+
+
+if(
+e.target===recorderModal
+){
+
+closeSmartRecorder();
+
+}
+
+}
+);
+
+
+/* =========================================================
+   منع تحديث الصفحة عند إرسال Enter
+========================================================= */
+
+document.addEventListener(
+"keydown",
+function(e){
+
+if(
+e.key==="Enter" &&
+e.target.id==="messageInput"
+){
+
+e.preventDefault();
+
+}
+
+}
+);
+
+
+/* =========================================================
+   بداية
+========================================================= */
+
+window.addEventListener(
+"load",
+function(){
+
+renderQuickTexts();
+
+resizeCanvas();
+
+}
+);
+
+</script>
+
+</body>
+</html></button>
 
 <input type="file" id="videoInputReal" accept="video/*" onchange="handleVideoToBoard(this)" class="hidden">
 
